@@ -18,13 +18,23 @@ func (p Policy) Validate(psw string) bool {
 	return n >= p.min && n <= p.max
 }
 
+func (p Policy) Validate2(psw string) bool {
+	count := 0
+	for _, pos := range []int{p.min - 1, p.max - 1} {
+		if psw[pos:pos+1] == p.char {
+			count++
+		}
+	}
+	return count == 1
+}
+
 func ParsePolicy(s string) Policy {
-	parts := strings.Split(s, " ")
-	rng := strings.Split(parts[0], "-")
+	split := strings.Split(s, " ")
+	rng := strings.Split(split[0], "-")
 	min, _ := strconv.Atoi(rng[0])
 	max, _ := strconv.Atoi(rng[1])
 	return Policy{
-		char: parts[1],
+		char: split[1],
 		min:  min, max: max,
 	}
 }
@@ -37,17 +47,21 @@ func main() {
 	defer f.Close()
 
 	count := 0
-
+	count2 := 0
 	input := bufio.NewScanner(f)
 	for input.Scan() {
-		parts := strings.Split(input.Text(), ":")
-		pol := ParsePolicy(parts[0])
-		psw := strings.TrimSpace(parts[1])
+		split := strings.Split(input.Text(), ":")
+		pol := ParsePolicy(split[0])
+		psw := strings.TrimSpace(split[1])
 
 		if pol.Validate(psw) {
 			count++
 		}
+		if pol.Validate2(psw) {
+			count2++
+		}
 	}
 
-	fmt.Println(count)
+	fmt.Println("policy 1:", count)
+	fmt.Println("policy 2:", count2)
 }
