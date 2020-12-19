@@ -21,7 +21,7 @@ func (p Policy) Validate(psw string) bool {
 func (p Policy) Validate2(psw string) bool {
 	count := 0
 	for _, pos := range []int{p.min - 1, p.max - 1} {
-		if psw[pos:pos+1] == p.char {
+		if psw[pos:pos+len(p.char)] == p.char {
 			count++
 		}
 	}
