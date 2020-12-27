@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -19,6 +21,29 @@ func hasPair(data []int, sum int) bool {
 	return false
 }
 
+func readData(in io.Reader) []int {
+	var data []int
+	scan := bufio.NewScanner(in)
+	for scan.Scan() {
+		num, _ := strconv.Atoi(scan.Text())
+		data = append(data, num)
+	}
+	return data
+}
+
+func contiguousSum(data []int, sum int) []int {
+	for i := 0; i < len(data)-1; i++ {
+		s := data[i]
+		for j := i + 1; j < len(data) && s < sum; j++ {
+			s += data[j]
+			if s == sum {
+				return data[i : j+1]
+			}
+		}
+	}
+	return nil
+}
+
 func main() {
 	f, err := os.Open("input.txt")
 	if err != nil {
@@ -26,27 +51,19 @@ func main() {
 	}
 	defer f.Close()
 
-	var data []int
-
-	scan := bufio.NewScanner(f)
-	// read the preamble
-	for i := 0; i < 25; i++ {
-		if !scan.Scan() {
-			log.Fatal("failed to read preamble")
-		}
-		text := scan.Text()
-		num, _ := strconv.Atoi(text)
-		data = append(data, num)
-	}
-
-	for scan.Scan() {
-		sum, _ := strconv.Atoi(scan.Text())
-		if !hasPair(data, sum) {
-			fmt.Println(sum)
+	data := readData(f)
+	var sum int
+	for i := 25; i < len(data); i++ {
+		if !hasPair(data[i-25:i], data[i]) {
+			sum = data[i]
 			break
 		}
-
-		data = append(data[1:], sum)
 	}
+	fmt.Println(sum)
+
+	cont := contiguousSum(data, sum)
+	sort.Ints(cont)
+	fmt.Println(cont)
+	fmt.Println(cont[0] + cont[len(cont)-1])
 
 }
