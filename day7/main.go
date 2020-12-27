@@ -19,6 +19,14 @@ vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
 faded blue bags contain no other bags.
 dotted black bags contain no other bags.`
 
+const sample2 = `shiny gold bags contain 2 dark red bags.
+dark red bags contain 2 dark orange bags.
+dark orange bags contain 2 dark yellow bags.
+dark yellow bags contain 2 dark green bags.
+dark green bags contain 2 dark blue bags.
+dark blue bags contain 2 dark violet bags.
+dark violet bags contain no other bags.`
+
 type Rule struct {
 	Container string
 	Content   string
@@ -56,6 +64,17 @@ func allContainers(targ string) []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+func countBags(bag string) int {
+	count := 0
+	for _, rule := range rules {
+		if rule.Container == bag {
+			count += rule.Quantity + rule.Quantity*countBags(rule.Content)
+		}
+	}
+	fmt.Println("countBags", bag, "=", count)
+	return count
 }
 
 // ParseRules parses the rules contained in a line.
@@ -111,4 +130,5 @@ func main() {
 	all := allContainers("shiny gold")
 	fmt.Println("all containers", all)
 	fmt.Println(len(all))
+	fmt.Println("count bags", countBags("shiny gold"))
 }
