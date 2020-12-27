@@ -31,7 +31,7 @@ func (r Rule) String() string {
 	return fmt.Sprintf("%q -> %d %q", r.Container, r.Quantity, r.Content)
 }
 
-func allowedContainers(bag string) []string {
+func directContainers(bag string) []string {
 	var content []string
 	for _, r := range rules {
 		if r.Content == bag {
@@ -41,17 +41,21 @@ func allowedContainers(bag string) []string {
 	return content
 }
 
-func count(targ string) int {
+func allContainers(targ string) []string {
 	var visited = make(map[string]bool)
-	var queue = allowedContainers(targ)
+	var queue = directContainers(targ)
 
 	for len(queue) > 0 {
 		visited[queue[0]] = true
-		queue = append(queue, allowedContainers(queue[0])...)
+		queue = append(queue, directContainers(queue[0])...)
 		queue = queue[1:]
 	}
 
-	return len(visited)
+	keys := make([]string, 0, len(visited))
+	for k := range visited {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 // ParseRules parses the rules contained in a line.
@@ -103,6 +107,8 @@ func main() {
 		fmt.Println(r)
 	}
 
-	fmt.Println(allowedContainers("shiny gold"))
-	fmt.Println(count("shiny gold"))
+	fmt.Println("direct containers", directContainers("shiny gold"))
+	all := allContainers("shiny gold")
+	fmt.Println("all containers", all)
+	fmt.Println(len(all))
 }
