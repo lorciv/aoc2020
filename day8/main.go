@@ -38,13 +38,16 @@ type Computer struct {
 	Acc   int
 }
 
-func (c *Computer) Execute(prog []Instr) error {
+func (c *Computer) Execute(prog []Instr) (bool, error) {
 	visited := make(map[int]bool)
 
-	for !visited[c.Count] {
+	for c.Count < len(prog) {
+		if visited[c.Count] {
+			return true, nil
+		}
 		visited[c.Count] = true
-		instr := prog[c.Count]
 
+		instr := prog[c.Count]
 		switch instr.Op {
 		case "acc":
 			c.Acc += instr.Arg
@@ -54,13 +57,11 @@ func (c *Computer) Execute(prog []Instr) error {
 		case "nop":
 			c.Count++
 		default:
-			return fmt.Errorf("unknown operation %q", instr.Op)
+			return false, fmt.Errorf("unknown operation %q", instr.Op)
 		}
-
-		fmt.Printf("%v | count = %d, acc = %d\n", instr, c.Count, c.Acc)
 	}
 
-	return nil
+	return false, nil
 }
 
 func main() {
@@ -71,6 +72,26 @@ func main() {
 	defer f.Close()
 
 	prog := ParseProg(f)
-	comp := Computer{}
-	comp.Execute(prog)
+
+	for i := 0; i < len(prog); i++ {
+		for prog[i].Op == "acc" {
+			i++
+		}
+		prog2 := make([]Instr, len(prog))
+		copy(prog2, prog)
+		if prog2[i].Op == "nop" {
+			prog2[i].Op = "jmp"
+		} else {
+			prog2[i].Op = "nop"
+		}
+		comp := Computer{}
+		loop, _ := comp.Execute(prog2)
+		if loop {
+			fmt.Println("loop!")
+		} else {
+			fmt.Println(comp)
+			break
+		}
+	}
+
 }
